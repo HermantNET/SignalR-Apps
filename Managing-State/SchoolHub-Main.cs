@@ -16,6 +16,7 @@ namespace Managing_State
         public override Task OnConnected()
         {
             // Add the newly connected user to the active user list
+            // TODO implement custom user name
             People.Add(new Person("Bobby", Context.ConnectionId));
             return base.OnConnected();
         }
@@ -23,7 +24,8 @@ namespace Managing_State
         public override Task OnDisconnected(bool stopCalled)
         {
             // Remove user from the active user list
-            People.RemoveAll(person => person.ConnectionId == Context.ConnectionId);
+            LeaveCurrentRoom();
+            People.Remove(CurrentPerson());
             return base.OnDisconnected(stopCalled);
         }
     }

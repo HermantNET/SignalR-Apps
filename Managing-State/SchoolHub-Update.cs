@@ -15,7 +15,7 @@ namespace Managing_State
             string result;
 
             // Determine whether classroom is empty or not
-            if (studentsList.Count() != 0)
+            if (studentsList.Count != 0)
             {
                 result = string.Join(", ", studentsList.Select(student => student.Name));
             }
@@ -31,14 +31,21 @@ namespace Managing_State
         {
             var classRoom = ClassRooms.Find(room => room.Subject == classRoomName);
             string students = StudentsNotZero(classRoom.Students);
-            Clients.Group(classRoomName).classRoomDetails(students, classRoom.Teacher);
+            Clients.OthersInGroup(classRoomName).classRoomDetails(students, classRoom.Teacher.Name);
         }
 
         private void UpdateClassStudents(string classRoomName)
         {
             var studentsList = ClassRooms.Find(room => room.Subject == classRoomName).Students;
             string students = StudentsNotZero(studentsList);
-            Clients.Group(classRoomName).classRoomDetails(students);
+            Clients.OthersInGroup(classRoomName).classRoomDetails(students);
+        }
+
+        private void UpdateCallerAll(string classRoomName)
+        {
+            var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
+            string students = StudentsNotZero(classroom.Students);
+            Clients.Caller.classRoomDetails(students, classroom.Teacher.Name, classroom.Subject);
         }
     }
 }

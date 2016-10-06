@@ -10,15 +10,40 @@ namespace Managing_State
 {
     public partial class SchoolHub : Hub
     {
+        private Person CurrentPerson()
+        {
+            return People.Find(p => p.ConnectionId == Context.ConnectionId);
+        }
+
+        private void LeaveCurrentRoom()
+        {
+            var person = CurrentPerson();
+            if (person.CurrentClassRoom != string.Empty)
+            {
+                LeaveClassRoom();
+            }
+        }
+
+        private void AddToStudents(ClassRoom classroom)
+        {
+            classroom.Students.Add(CurrentPerson());
+        }
+
+        private void RemoveFromStudents(ClassRoom classroom)
+        {
+            classroom.Students.Remove(CurrentPerson());
+        }
+
         public async Task CreateClassRoom(string classRoomName)
         {
-            var teacher = People.Find(person => person.ConnectionId == Context.ConnectionId);
+            LeaveCurrentRoom();
+            var teacher = CurrentPerson();
             await Groups.Add(Context.ConnectionId, classRoomName);
             // Add new room to list of active rooms, assign user as teacher, declare maximum students
             ClassRooms.Add(new ClassRoom(classRoomName, teacher, 3));
             teacher.CurrentClassRoom = classRoomName;
             // Send class information to clients
-            Clients.Group(classRoomName).classRoomDetails(classRoomName, teacher.Name, "none");
+            Clients.Group(classRoomName).classRoomDetails("none", teacher.Name, classRoomName);
         }
 
         public async Task JoinClassRoom(string classRoomName)
@@ -26,7 +51,13 @@ namespace Managing_State
             // Check if classroom exits
             if (ClassRooms.Exists(room => room.Subject == classRoomName))
             {
+                LeaveCurrentRoom();
+                var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
                 await Groups.Add(Context.ConnectionId, classRoomName);
+                // Update Persons current classroom property
+                CurrentPerson().CurrentClassRoom = classRoomName;
+                AddToStudents(classroom);
+                UpdateCallerAll(classRoomName);
                 UpdateClassStudents(classRoomName);
             }
             else
@@ -38,14 +69,14 @@ namespace Managing_State
 
         public void LeaveClassRoom()
         {
-            var person = People.Find(p => p.ConnectionId == Context.ConnectionId);
+            var person = CurrentPerson();
             var classRoom = ClassRooms.Find(room => room.Subject == person.CurrentClassRoom);
 
             // Check if teacher has left room
             if (classRoom.Teacher == person)
             {
                 // If the classroom isn't empty, assign first student to teacher role
-                if (classRoom.Students.Count != 0)
+                if (classRoom.Students.Count > 0)
                 {
                     var newTeacher = classRoom.Students.First();
                     classRoom.Teacher = newTeacher;
@@ -54,11 +85,20 @@ namespace Managing_State
                     // Update connected clients with new teacher and students property
                     UpdateClassTeacherStudents(classRoom.Subject);
                 }
+                else
+                {
+                    ClassRooms.Remove(classRoom);
+                }
+            }
+            else
+            {
+                RemoveFromStudents(classRoom);
             }
 
             // Remove user from room and sets their current room to empty
             Groups.Remove(Context.ConnectionId, classRoom.Subject);
             person.CurrentClassRoom = string.Empty;
+            Clients.Caller.leftRoom();
         }
     }
 }

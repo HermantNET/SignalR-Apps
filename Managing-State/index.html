@@ -8,7 +8,10 @@
     <h1 id="className"></h1>
     <h3 id="teacher"></h3>
     <h4 id="students"></h4>
-    <button id="classRoomDoor"></button>
+    <button id="classCreate">Create Classroom</button>
+    <button id="classJoin">Join Classroom</button>
+    <button id="classLeave">Leave Classroom</button>
+
 
     <!--Script references. -->
     <!--Reference the jQuery library. -->
@@ -23,20 +26,32 @@
         var schoolHub = connection.createHubProxy('schoolHub');
 
 
-        schoolHub.on('classRoomDetails', function (name, teacher, students) {
-            $('#className').text("Subject: " + name);
-            $('#teacher').text("Teacher: " + teacher);
-            $('#students').text("Students: " + students);
+        schoolHub.on('classRoomDetails', function (students, teacher = $('#teacher').text(), subject = $('#className').text()) {
+            $('#className').text(subject);
+            $('#teacher').text(teacher);
+            $('#students').text(students);
         });
 
         schoolHub.on('roomDoesntExist', function () {
+            alert('Classroom does not exist!');
+        });
 
+        schoolHub.on('leftRoom', function () {
+            $('#className').text('');
+            $('#teacher').text('');
+            $('#students').text('');
         });
 
 
         connection.start().done(function () {
-            $('#classRoomDoor').click(function () {
-
+            $('#classCreate').click(function () {
+                schoolHub.invoke('CreateClassRoom', prompt('Class Name: '))
+            });
+            $('#classJoin').click(function () {
+                schoolHub.invoke('JoinClassRoom', prompt('Class Name: '))
+            });
+            $('#classLeave').click(function () {
+                schoolHub.invoke('LeaveClassRoom')
             });
         });
     </script>
