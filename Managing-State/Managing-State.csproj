@@ -124,8 +124,12 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\ClassRoom.cs" />
+    <Compile Include="Models\Person.cs" />
+    <Compile Include="SchoolHub-Update.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SchoolHub.cs" />
+    <Compile Include="SchoolHub-Main.cs" />
+    <Compile Include="SchoolHub-Actions.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <PropertyGroup>

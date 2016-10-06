@@ -5,7 +5,10 @@
     <meta charset="utf-8" />
 </head>
 <body>
-    <h1 id="cats"></h1>
+    <h1 id="className"></h1>
+    <h3 id="teacher"></h3>
+    <h4 id="students"></h4>
+    <button id="classRoomDoor"></button>
 
     <!--Script references. -->
     <!--Reference the jQuery library. -->
@@ -19,12 +22,22 @@
         var connection = $.hubConnection();
         var schoolHub = connection.createHubProxy('schoolHub');
 
-        schoolHub.on('hello', function (msg) {
-            $('#cats').text(msg);
+
+        schoolHub.on('classRoomDetails', function (name, teacher, students) {
+            $('#className').text("Subject: " + name);
+            $('#teacher').text("Teacher: " + teacher);
+            $('#students').text("Students: " + students);
         });
 
+        schoolHub.on('roomDoesntExist', function () {
+
+        });
+
+
         connection.start().done(function () {
-            schoolHub.invoke('Hello');
+            $('#classRoomDoor').click(function () {
+
+            });
         });
     </script>
 </body>
