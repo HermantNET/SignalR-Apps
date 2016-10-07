@@ -72,33 +72,37 @@ namespace Managing_State
             var person = CurrentPerson();
             var classRoom = ClassRooms.Find(room => room.Subject == person.CurrentClassRoom);
 
-            // Check if teacher has left room
-            if (classRoom.Teacher == person)
+            if (classRoom != null)
             {
-                // If the classroom isn't empty, assign first student to teacher role
-                if (classRoom.Students.Count > 0)
+                // Check if teacher has left room
+                if (classRoom.Teacher == person)
                 {
-                    var newTeacher = classRoom.Students.First();
-                    classRoom.Teacher = newTeacher;
-                    classRoom.Students.Remove(newTeacher);
-
-                    // Update connected clients with new teacher and students property
-                    UpdateClassTeacherStudents(classRoom.Subject);
+                    // If the classroom isn't empty, assign first student to teacher role
+                    if (classRoom.Students.Count > 0)
+                    {
+                        var newTeacher = classRoom.Students.First();
+                        classRoom.Teacher = newTeacher;
+                        classRoom.Students.Remove(newTeacher);
+                        Groups.Remove(Context.ConnectionId, classRoom.Subject);
+                        // Update connected clients with new teacher and students property
+                        UpdateClassTeacherStudents(classRoom.Subject);
+                    }
+                    else
+                    {
+                        Groups.Remove(Context.ConnectionId, classRoom.Subject);
+                        ClassRooms.Remove(classRoom);
+                    }
                 }
                 else
                 {
-                    ClassRooms.Remove(classRoom);
+                    Groups.Remove(Context.ConnectionId, classRoom.Subject);
+                    RemoveFromStudents(classRoom);
+                    UpdateClassStudents(classRoom.Subject);
                 }
-            }
-            else
-            {
-                RemoveFromStudents(classRoom);
-            }
 
-            // Remove user from room and sets their current room to empty
-            Groups.Remove(Context.ConnectionId, classRoom.Subject);
-            person.CurrentClassRoom = string.Empty;
-            Clients.Caller.leftRoom();
+                person.CurrentClassRoom = string.Empty;
+                Clients.Caller.leftRoom();
+            }
         }
     }
 }
