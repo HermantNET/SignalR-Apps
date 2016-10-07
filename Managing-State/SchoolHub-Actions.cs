@@ -18,9 +18,12 @@ namespace Managing_State
         private void LeaveCurrentRoom()
         {
             var person = CurrentPerson();
-            if (person.CurrentClassRoom != string.Empty)
+            if (person != null)
             {
-                LeaveClassRoom();
+                if (person.CurrentClassRoom != string.Empty)
+                {
+                    LeaveClassRoom();
+                }
             }
         }
 
@@ -48,11 +51,12 @@ namespace Managing_State
 
         public async Task JoinClassRoom(string classRoomName)
         {
+            var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
             // Check if classroom exits
-            if (ClassRooms.Exists(room => room.Subject == classRoomName))
+            if (classroom != null && classroom.MaxStudents > classroom.Students.Count)
             {
                 LeaveCurrentRoom();
-                var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
+                
                 await Groups.Add(Context.ConnectionId, classRoomName);
                 // Update Persons current classroom property
                 CurrentPerson().CurrentClassRoom = classRoomName;

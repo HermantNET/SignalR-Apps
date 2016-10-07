@@ -17,7 +17,7 @@ namespace Managing_State
         {
             // Add the newly connected user to the active user list
             // TODO implement custom user name
-            People.Add(new Person("Bobby", Context.ConnectionId));
+            People.Add(new Person(Context.QueryString["name"], Context.ConnectionId));
             return base.OnConnected();
         }
 

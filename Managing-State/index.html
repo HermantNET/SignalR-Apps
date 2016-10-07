@@ -25,7 +25,7 @@
         var connection = $.hubConnection();
         var schoolHub = connection.createHubProxy('schoolHub');
 
-
+        // SignalR client methods
         schoolHub.on('classRoomDetails', function (students, teacher = $('#teacher').text(), subject = $('#className').text()) {
             $('#className').text(subject);
             $('#teacher').text(teacher);
@@ -43,6 +43,10 @@
         });
 
 
+        // Set client name
+        connection.qs = { 'name': prompt('What is your name?')};
+        
+        // Start connection, when finished assign click handlers to buttons
         connection.start().done(function () {
             $('#classCreate').click(function () {
                 schoolHub.invoke('CreateClassRoom', prompt('Class Name: '))
