@@ -36,6 +36,10 @@
             alert('Classroom does not exist!');
         });
 
+        schoolHub.on('roomIsFull', function () {
+            alert('Classroom is full');
+        });
+
         schoolHub.on('leftRoom', function () {
             $('#className').text('');
             $('#teacher').text('');
@@ -49,7 +53,15 @@
         // Start connection, when finished assign click handlers to buttons
         connection.start().done(function () {
             $('#classCreate').click(function () {
-                schoolHub.invoke('CreateClassRoom', prompt('Class Name: '))
+                schoolHub.invoke('CreateClassRoom', prompt('Class subject: '), (() => {
+                    var finished = false;
+                    var max;
+                    while (!finished) {
+                        max = prompt('Maximum number of students: ');
+                        if (Number.isInteger(parseInt(max))) finished = true;
+                    }
+                    return max;
+                })());
             });
             $('#classJoin').click(function () {
                 schoolHub.invoke('JoinClassRoom', prompt('Class Name: '))

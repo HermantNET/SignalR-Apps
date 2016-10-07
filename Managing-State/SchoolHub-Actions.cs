@@ -37,32 +37,52 @@ namespace Managing_State
             classroom.Students.Remove(CurrentPerson());
         }
 
-        public async Task CreateClassRoom(string classRoomName)
+        public async Task CreateClassRoom(string classRoomName, string maxClients)
         {
             LeaveCurrentRoom();
             var teacher = CurrentPerson();
             await Groups.Add(Context.ConnectionId, classRoomName);
+            int maxStudents = 5;
+
+            // Check if maxClients is an Integer and is within an acceptable range, else set to 5
+            int.TryParse(maxClients, out maxStudents);
+            if (maxStudents == 0)
+            {
+                maxStudents = 5;
+            }
+            else if (maxStudents > 30)
+            {
+                maxStudents = 30;
+            }
+
             // Add new room to list of active rooms, assign user as teacher, declare maximum students
-            ClassRooms.Add(new ClassRoom(classRoomName, teacher, 3));
+            ClassRooms.Add(new ClassRoom(classRoomName, teacher, maxStudents));
             teacher.CurrentClassRoom = classRoomName;
             // Send class information to clients
-            Clients.Group(classRoomName).classRoomDetails("none", teacher.Name, classRoomName);
+            UpdateCallerAll(classRoomName);
         }
 
         public async Task JoinClassRoom(string classRoomName)
         {
             var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
             // Check if classroom exits
-            if (classroom != null && classroom.MaxStudents > classroom.Students.Count)
+            if (classroom != null)
             {
-                LeaveCurrentRoom();
-                
-                await Groups.Add(Context.ConnectionId, classRoomName);
-                // Update Persons current classroom property
-                CurrentPerson().CurrentClassRoom = classRoomName;
-                AddToStudents(classroom);
-                UpdateCallerAll(classRoomName);
-                UpdateClassStudents(classRoomName);
+                if (classroom.MaxStudents > classroom.Students.Count)
+                {
+                    LeaveCurrentRoom();
+
+                    await Groups.Add(Context.ConnectionId, classRoomName);
+                    // Update Persons current classroom property
+                    CurrentPerson().CurrentClassRoom = classRoomName;
+                    AddToStudents(classroom);
+                    UpdateCallerAll(classRoomName);
+                    UpdateClassStudents(classRoomName);
+                }
+                else
+                {
+                    Clients.Caller.roomIsFull();
+                }
             }
             else
             {

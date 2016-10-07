@@ -27,25 +27,30 @@ namespace Managing_State
             return result;
         }
 
+        private string StudentsCount(ClassRoom classroom)
+        {
+            return "Students: " + classroom.Students.Count + "/" + classroom.MaxStudents + ": ";
+        }
+
         private void UpdateClassTeacherStudents(string classRoomName)
         {
-            var classRoom = ClassRooms.Find(room => room.Subject == classRoomName);
-            string students = StudentsNotZero(classRoom.Students);
-            Clients.OthersInGroup(classRoomName).classRoomDetails(students, classRoom.Teacher.Name);
+            var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
+            string students = StudentsNotZero(classroom.Students);
+            Clients.OthersInGroup(classRoomName).classRoomDetails(StudentsCount(classroom) + students, "Teacher: " + classroom.Teacher.Name);
         }
 
         private void UpdateClassStudents(string classRoomName)
         {
-            var studentsList = ClassRooms.Find(room => room.Subject == classRoomName).Students;
-            string students = StudentsNotZero(studentsList);
-            Clients.OthersInGroup(classRoomName).classRoomDetails(students);
+            var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
+            string students = StudentsNotZero(classroom.Students);
+            Clients.OthersInGroup(classRoomName).classRoomDetails(StudentsCount(classroom) + students);
         }
 
         private void UpdateCallerAll(string classRoomName)
         {
             var classroom = ClassRooms.Find(room => room.Subject == classRoomName);
             string students = StudentsNotZero(classroom.Students);
-            Clients.Caller.classRoomDetails(students, classroom.Teacher.Name, classroom.Subject);
+            Clients.Caller.classRoomDetails(StudentsCount(classroom) + students, "Teacher: " + classroom.Teacher.Name, "Subject: " + classroom.Subject);
         }
     }
 }
